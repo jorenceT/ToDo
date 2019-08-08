@@ -47,15 +47,13 @@ export class AppComponent {
   }
 
   updateDonelist() {
-    const index = this.commonService.findId(this.DoneList, this.IdToUpdate);
-    this.DoneList[index].done = this.InputName;
+    this.commonService.updateTask(this.DoneList, this.IdToUpdate, this.InputName);
     this.UpdateMode = false;
     console.log('updated ' + this.IdToUpdate + ' element in to do list');
   }
 
   updateToDolist() {
-    const index = this.commonService.findId(this.ToDoList, this.IdToUpdate);
-    this.ToDoList[index].toDo = this.InputName;
+    this.commonService.updateTask(this.ToDoList, this.IdToUpdate, this.InputName);
     this.UpdateMode = false;
     console.log('updated ' + this.IdToUpdate + ' element in to do list');
   }
@@ -65,23 +63,15 @@ export class AppComponent {
     this.DoneList.push(doneInstance);
   }
   addTaskToDo(name, id?) {
-  const ToDoInstance = this.toDoService.createToDoInstance(name, this.ToDoList.length, id);
-  this.ToDoList.push(ToDoInstance);
+    const ToDoInstance = this.toDoService.createToDoInstance(name, this.ToDoList.length, id);
+    this.ToDoList.push(ToDoInstance);
   }
 
   removeFromToDo(id) {
-    // remove(this.ToDoList, (n) => {
-    //   console.log(n.id + ' going to be deleted');
-    //   return n.id === id;
-    // });
     this.commonService.removeFromArray(this.ToDoList, id);
   }
 
   removeFromDone(id) {
-    // remove(this.DoneList, (n) => {
-    //   console.log(n.id + ' going to be deleted');
-    //   return n.id === id;
-    // });
     this.commonService.removeFromArray(this.DoneList, id);
   }
 
