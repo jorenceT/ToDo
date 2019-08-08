@@ -1,4 +1,5 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
+import { remove, find } from 'lodash';
 
 @Component({
   selector: 'app-root',
@@ -9,72 +10,108 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 export class AppComponent {
   InputName: string;
   UpdateMode = false;
-  NameToUpdate: string;
-  DataStore: DataStore;
+  IdToUpdate: string;
+  ToDoList: Array<any>;
+  DoneList: Array<any>;
   UpdateDone = false;
+  UniqueId = 0;
 
   @ViewChild('name') NameId: ElementRef;
 
   constructor() {
-    this.DataStore = new DataStore();
-    this.DataStore.TodoList = [];
-    this.DataStore.checkBox = [];
-    this.DataStore.id = null;
-    this.DataStore.done = [];
+    this.ToDoList = [];
+    this.DoneList = [];
   }
 
-  deleteAElement(name): void {
-    const index: number = this.DataStore.TodoList.indexOf(name);
-    if (index !== -1) {
-      this.DataStore.TodoList.splice(index, 1);
-    }
-  }
-
-  updateElemet(name): void {
-    this.NameToUpdate = name;
+  updateElemet(id, name, updateDone?): void {
+    this.IdToUpdate = id;
+    this.InputName = name;
     this.NameId.nativeElement.focus();
     this.UpdateMode = true;
-    console.log('setting mode to update for ' + this.InputName);
+    this.UpdateDone = updateDone;
   }
 
-  update(event): void {
-    if (event.keyCode === 13) {
-      if (this.UpdateMode === true) {
-        if (this.UpdateDone === true) {
-          const index: number = this.DataStore.done.indexOf(this.NameToUpdate);
-          this.DataStore.done[index] = this.InputName;
-          this.UpdateMode = false;
-          console.log('updated ' + this.NameToUpdate + ' in to done');
-        } else {
-          const index: number = this.DataStore.TodoList.indexOf(this.NameToUpdate);
-          this.DataStore.TodoList[index] = this.InputName;
-          this.UpdateMode = false;
-          console.log('updated ' + this.NameToUpdate + ' in to do list');
-        }
-
+  update(): void {
+    if (this.UpdateMode === true) {
+      if (this.UpdateDone === true) {
+        this.updateDonelist();
       } else {
-        this.DataStore.TodoList.push(this.InputName);
-        console.log('added ' + this.InputName);
+        this.updateToDolist();
       }
+    } else {
+      this.addTaskToDo(this.InputName);
     }
+    this.clear();
   }
 
-  uncheckCheckBox(name): void {
-    const index: number = this.DataStore.done.indexOf(name);
-    this.DataStore.checkBox[index] = false;
-    if (index !== -1) {
-      this.DataStore.done.splice(index, 1);
-      this.DataStore.TodoList.push(name);
-    }
+  updateDonelist() {
+    const index = this.findId(this.DoneList);
+    this.DoneList[index].done = this.InputName;
+    this.UpdateMode = false;
+    console.log('updated ' + this.IdToUpdate + ' element in to do list');
   }
 
-  checkCheckBox(name) {
-    const index: number = this.DataStore.TodoList.indexOf(name);
-    this.DataStore.checkBox[index] = true;
-    if (index !== -1) {
-      this.DataStore.TodoList.splice(index, 1);
-      this.DataStore.done.push(name);
+  updateToDolist() {
+    const index = this.findId(this.ToDoList);
+    this.ToDoList[index].toDo = this.InputName;
+    this.UpdateMode = false;
+    console.log('updated ' + this.IdToUpdate + ' element in to do list');
+  }
+
+  findId(objectArray) {
+    const valueToChange = find(objectArray, (o) => {
+      return o.id === this.IdToUpdate;
+    });
+    return objectArray.indexOf(valueToChange);
+  }
+
+  addTaskDone(name, id) {
+    const doneInstance = new DoneModel();
+    doneInstance.done = name;
+    if (this.DoneList.length === -1) {
+      doneInstance.id = 0;
+    } else {
+      doneInstance.id = id;
     }
+    this.DoneList.push(doneInstance);
+  }
+
+  addTaskToDo(name, id?) {
+    const ToDoInstance = new ToDoModel();
+    ToDoInstance.toDo = name;
+    if (this.ToDoList.length === -1) {
+      ToDoInstance.id = 0;
+    } else if (id) {
+      ToDoInstance.id = id;
+    } else {
+      ToDoInstance.id = this.UniqueId;
+      this.UniqueId = this.UniqueId + 1;
+    }
+    this.ToDoList.push(ToDoInstance);
+  }
+
+  removeFromToDo(id) {
+    remove(this.ToDoList, (n) => {
+      console.log(n.id + ' going to be deleted');
+      return n.id === id;
+    });
+  }
+
+  removeFromDone(id) {
+    remove(this.DoneList, (n) => {
+      console.log(n.id + ' going to be deleted');
+      return n.id === id;
+    });
+  }
+
+  checkCheckBox(task) {
+    this.addTaskDone(task.toDo, task.id);
+    this.removeFromToDo(task.id);
+  }
+
+  uncheckCheckBox(task): void {
+    this.addTaskToDo(task.done, task.id);
+    this.removeFromDone(task.id);
   }
 
   clear() {
@@ -83,26 +120,14 @@ export class AppComponent {
     }
   }
 
-  deleteDoneElement(name) {
-    const index: number = this.DataStore.done.indexOf(name);
-    if (index !== -1) {
-      this.DataStore.done.splice(index, 1);
-    }
-  }
-
-  updateDoneElemet(name) {
-    this.NameToUpdate = name;
-    this.NameId.nativeElement.focus();
-    this.UpdateMode = true;
-    this.UpdateDone = true;
-    console.log('setting mode to update for ' + this.InputName);
-  }
-
 }
 
-export class DataStore {
+export class ToDoModel {
   id: number;
-  TodoList: string[];
-  checkBox: boolean[];
-  done: string[];
+  toDo: string;
+}
+
+export class DoneModel {
+  id: number;
+  done: string;
 }
