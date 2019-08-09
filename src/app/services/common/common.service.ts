@@ -20,7 +20,11 @@ export class CommonService {
 
     updateTask(arrayTask, IdToUpdate, InputName) {
         const index = this.findId(arrayTask, IdToUpdate);
-        arrayTask[index].toDo = InputName;
+        if (arrayTask[index].toDo) {
+            arrayTask[index].toDo = InputName;
+        } else {
+            arrayTask[index].done = InputName;
+        }
         return arrayTask;
     }
 }
