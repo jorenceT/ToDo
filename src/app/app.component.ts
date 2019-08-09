@@ -17,6 +17,7 @@ export class AppComponent {
   ToDoList: Array<any>;
   DoneList: Array<any>;
   UpdateDone = false;
+  InValid = true;
 
   @ViewChild('name') NameId: ElementRef;
 
@@ -34,6 +35,7 @@ export class AppComponent {
   }
 
   update(): void {
+    this.validation();
     if (this.UpdateMode === true) {
       if (this.UpdateDone === true) {
         this.updateDonelist();
@@ -45,7 +47,13 @@ export class AppComponent {
     }
     this.clear();
   }
-
+  validation() {
+    if (!this.InputName) {
+      this.InValid = true;
+      return;
+    }
+    this.InValid = false;
+  }
   updateDonelist() {
     this.commonService.updateTask(this.DoneList, this.IdToUpdate, this.InputName);
     this.UpdateMode = false;
